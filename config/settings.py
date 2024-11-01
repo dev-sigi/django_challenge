@@ -43,6 +43,7 @@ SYSTEM_APPS = [
 CUSTOM_APPS = [
     "common.apps.CommonConfig",
     "users.apps.UsersConfig",
+    "tweet.apps.TweetConfig",
 ]
 
 INSTALLED_APPS = SYSTEM_APPS + CUSTOM_APPS
