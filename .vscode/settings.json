@@ -1,0 +1,19 @@
+{
+    // 저장시 자동 포매팅
+    "editor.formatOnSave": true,
+    // 후행 공백 삭제
+    "files.trimTrailingWhitespace": true,
+    "[markdown]": {
+      "files.trimTrailingWhitespace": false
+    },
+  
+    // 탭 사이즈
+    "editor.tabSize": 2,
+    // 공백 출력 옵션
+    "editor.renderWhitespace": "all",
+  
+    // Prettier
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.semi": true,
+    "prettier.singleQuote": true
+  }
