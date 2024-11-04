@@ -5,7 +5,7 @@ from common.models import CommonModel
 class Tweet(CommonModel):
 
     payload = models.TextField(max_length=180)
-    user = models.ForeignKey("users.Users", on_delete=models.CASCADE)
+    user = models.ForeignKey("users.Users", on_delete=models.CASCADE, related_name="tweets")
 
     def __str__(self):
         return f"{self.user}님의 트윗"
@@ -16,8 +16,8 @@ class Tweet(CommonModel):
 
 
 class Like(CommonModel):
-    user = models.ForeignKey("users.Users", on_delete=models.CASCADE)
-    tweet = models.ForeignKey("Tweet", on_delete=models.CASCADE)
+    user = models.ForeignKey("users.Users", on_delete=models.CASCADE, related_name="likes")
+    tweet = models.ForeignKey("Tweet", on_delete=models.CASCADE, related_name="likes")
 
     def __str__(self):
         return f"{self.user}님이 {self.tweet}를 좋아합니다."
