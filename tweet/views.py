@@ -1,7 +1,19 @@
+from rest_framework.decorators import api_view
+from rest_framework.exceptions import NotFound
 from django.shortcuts import render
-from django.http import HttpResponse
+
+from tweet.serializers import TweetListSerializer
 from .models import Tweet
 
+
+@api_view(["GET"])
 def all_tweet(request):
   tweets = Tweet.objects.all()
-  return render(request, "all_tweet.html", {"tweets": tweets, "title": "All Tweets",},)
+  serializer = TweetListSerializer(tweets, many=True)
+  return render(request,
+                "all_tweet.html",
+                {
+                  "tweets": serializer.data,
+                  "title": "All Tweets",
+                },
+              )
