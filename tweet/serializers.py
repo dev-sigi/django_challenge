@@ -17,3 +17,18 @@ class TweetSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class TweetDetailSerializer(serializers.ModelSerializer):
+
+    user = TiniUserSerializer()
+
+    class Meta:
+        model = Tweet
+        fields = (
+            "id",
+            "user",
+            "payload",
+            "created_at",
+            "updated_at",
+        )
