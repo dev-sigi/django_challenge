@@ -1,17 +1,19 @@
 from rest_framework import serializers
+
+from users.serializers import TiniUserSerializer
 from .models import Tweet
 
-class TweetListSerializer(serializers.ModelSerializer):
 
-    user = serializers.SerializerMethodField()
+class TweetSerializer(serializers.ModelSerializer):
+
+    user = TiniUserSerializer(read_only=True)
+
     class Meta:
         model = Tweet
-        fields = ["pk",
-                  "payload",
-                  "user",
-                  "created_at",
-                  "updated_at"]
-
-    def get_user(self, tweet):
-        return {"user_id": tweet.user.user_id, "name": tweet.user.name}
-
+        fields = [
+            "pk",
+            "payload",
+            "user",
+            "created_at",
+            "updated_at",
+        ]
