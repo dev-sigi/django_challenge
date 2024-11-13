@@ -7,11 +7,19 @@ from rest_framework.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
     HTTP_400_BAD_REQUEST,
 )
-from rest_framework.exceptions import NotFound, APIException, ParseError
+from rest_framework.exceptions import (
+    NotFound,
+    APIException,
+    ParseError,
+    AuthenticationFailed,
+)
 
 from tweet.serializers import TweetSerializer
 from .serializers import TiniUserSerializer, PrivateUserSerializer
 
+from rest_framework.permissions import IsAuthenticated
+
+from common.utils import to_string
 from .models import Users
 
 
@@ -33,10 +41,7 @@ class User(APIView):
         if password is None:
             raise ParseError("비밀번호가 존재하지 않습니다.")
 
-        try:
-            password = str(password)
-        except Exception:
-            raise ParseError("비밀번호를 문자열로 변환할 수 없습니다.")
+        password = to_string(password)
 
         serializer = PrivateUserSerializer(data=request.data)
 
@@ -99,3 +104,47 @@ class UserTweetList(APIView):
             serializer.data,
             status=HTTP_200_OK,
         )
+
+
+class ChangePassword(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get_user(self, email):
+        try:
+            user = Users.objects.get(email=email)
+            return user
+        except Users.DoesNotExist:
+            return NotFound(f"{email}에 해당하는 유저를 찾을 수 없습니다.")
+
+    def put(self, request):
+
+        email = request.data.get("email")
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+
+        user = self.get_user(email)
+
+        if user != request.user:
+            raise AuthenticationFailed("본인의 요청이 아닙니다.")
+
+        if not old_password or not new_password:
+            raise ParseError("비밀번호가 존재하지 않습니다.")
+
+        old_password = to_string(old_password)
+        new_password = to_string(new_password)
+
+        if old_password == new_password:
+            raise ParseError("기존 비밀번호와 동일한 비밀번호로 변경할 수 없습니다.")
+
+        if not user.check_password(old_password):
+            raise ParseError("기존 비밀번호가 일치하지 않습니다.")
+
+        try:
+            with transaction.atomic():
+                user.set_password(new_password)
+                user.save()
+
+                return Response(status=HTTP_200_OK)
+        except Exception as e:
+            raise APIException(f"비밀번호 변경 중 오류가 발생했습니다: {str(e)}")
