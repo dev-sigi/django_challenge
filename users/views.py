@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.contrib.auth import authenticate, login, logout
 
 from rest_framework.decorators import APIView
 from rest_framework.response import Response
@@ -6,6 +7,7 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_500_INTERNAL_SERVER_ERROR,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
 )
 from rest_framework.exceptions import (
     NotFound,
@@ -148,3 +150,50 @@ class ChangePassword(APIView):
                 return Response(status=HTTP_200_OK)
         except Exception as e:
             raise APIException(f"비밀번호 변경 중 오류가 발생했습니다: {str(e)}")
+
+
+class LogIn(APIView):
+
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        if not email or not password:
+            raise ParseError("아이디 또는 비밀번호를 입력하지 않았습니다.")
+
+        email = to_string(email)
+        password = to_string(password)
+
+        try:
+            user = authenticate(
+                request,
+                email=email,
+                password=password,
+            )
+        except Exception as e:
+            raise APIException(f"사용자 인증에 실패했습니다.: {str(e)}")
+
+        if not user:
+            return Response(
+                "아이디 또는 비밀번호가 올바르지 않습니다.",
+                status=HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            login(request, user)
+        except Exception as e:
+            raise APIException(f"로그인 중 오류가 발생했습니다.: {str(e)}")
+
+        return Response(status=HTTP_200_OK)
+
+
+class LogOut(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            logout(request)
+            return Response(status=HTTP_200_OK)
+        except Exception as e:
+            raise APIException(f"로그아웃 중 오류가 발생했습니다.: {str(e)}")
