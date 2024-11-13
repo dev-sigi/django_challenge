@@ -10,7 +10,7 @@ from .models import Users
 
 
 # GET /users
-class UserList(APIView):
+class Users(APIView):
 
     def get(self, request):
         users = Users.objects.all()
