@@ -3,10 +3,17 @@ from rest_framework import serializers
 from .models import Users
 
 
-class UserDetailSerializer(serializers.ModelSerializer):
+class PrivateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = "__all__"
+        exclude = (
+            "password",
+            "is_superuser",
+            "is_staff",
+            "is_active",
+            "groups",
+            "user_permissions",
+        )
 
 
 class TiniUserSerializer(serializers.ModelSerializer):
