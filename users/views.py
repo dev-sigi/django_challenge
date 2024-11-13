@@ -1,21 +1,57 @@
+from django.db import transaction
+
 from rest_framework.decorators import APIView
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_500_INTERNAL_SERVER_ERROR
-from rest_framework.exceptions import NotFound, APIException
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+    HTTP_400_BAD_REQUEST,
+)
+from rest_framework.exceptions import NotFound, APIException, ParseError
 
 from tweet.serializers import TweetSerializer
-from .serializers import TiniUserSerializer
+from .serializers import TiniUserSerializer, PrivateUserSerializer
 
 from .models import Users
 
 
 # GET /users
-class Users(APIView):
+class User(APIView):
 
     def get(self, request):
         users = Users.objects.all()
-        serializer = TiniUserSerializer(users, many=True)
+        serializer = TiniUserSerializer(
+            users,
+            many=True,
+        )
         return Response(serializer.data, status=HTTP_200_OK)
+
+    def post(self, request):
+        password = request.data.get("password")
+
+        # 비밀번호 존재 여부 확인
+        if password is None:
+            raise ParseError("비밀번호가 존재하지 않습니다.")
+
+        try:
+            password = str(password)
+        except Exception:
+            raise ParseError("비밀번호를 문자열로 변환할 수 없습니다.")
+
+        serializer = PrivateUserSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                user = serializer.save()
+                user.set_password(password)
+                user.save()
+
+                return Response(PrivateUserSerializer(user).data, status=HTTP_200_OK)
+        except Exception as e:
+            raise APIException(f"사용자 생성 중 오류가 발생했습니다: {str(e)}")
 
 
 # GET /users/<int:user_id>
