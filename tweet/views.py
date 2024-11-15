@@ -3,6 +3,7 @@ from rest_framework.exceptions import APIException, NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_200_OK,
+    HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
     HTTP_500_INTERNAL_SERVER_ERROR,
     HTTP_204_NO_CONTENT,
@@ -14,6 +15,8 @@ from .models import Tweet
 
 
 class TweetList(APIView):
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
         tweets = Tweet.objects.all()
@@ -31,7 +34,7 @@ class TweetList(APIView):
                 serializer.save(user=user)
                 return Response(
                     serializer.data,
-                    status=HTTP_200_OK,
+                    status=HTTP_201_CREATED,
                 )
             else:
                 return Response(

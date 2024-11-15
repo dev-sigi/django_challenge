@@ -142,5 +142,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "config.authentication.UsernameAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ]
 }
